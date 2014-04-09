@@ -28,7 +28,7 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
     var suite = suites[browser.id] = xml;
     suite.DIV(H1(browser.name),H1(pkgName),H1(timestamp),H1(os.hostname()));
     
-    suite.P(browser.fullName));
+    suite.P(browser.fullName);
   };
 
   this.onRunStart = function(browsers) {
@@ -68,9 +68,9 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
     helper.mkdirIfNotExists(path.dirname(outputFile), function() {
       fs.writeFile(outputFile, htmlToOutput.toString(), function(err) {
         if (err) {
-          log.warn('Cannot write JUnit xml\n\t' + err.message);
+          log.warn('Cannot write HTML\n\t' + err.message);
         } else {
-          log.debug('JUnit results written to "%s".', outputFile);
+          log.debug('HTML results written to "%s".', outputFile);
         }
 
         if (!--pendingFileWritings) {
