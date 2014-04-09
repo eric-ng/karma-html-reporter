@@ -15,9 +15,12 @@
     "karma-reporter",
     "html"
   ],
-  "author": "Eric Ng <airic.ng@gmail.com>",
+  "author": {
+    "name": "Eric Ng",
+    "email": "airic.ng@gmail.com"
+  },
   "dependencies": {
-    "DOMBuilder":"2.1.5"
+    
   },
   "peerDependencies": {
     "karma": ">=0.10"
@@ -25,5 +28,17 @@
   "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4"
-  }
+  },
+  "readme": "karma-html-reporter\n===================\n\nReporter for Karma test runner, generates html\n",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/eric-ng/karma-html-reporter/issues"
+  },
+  "homepage": "https://github.com/eric-ng/karma-html-reporter",
+  "_id": "karma-html-reporter@1.0.0",
+  "dist": {
+    "shasum": "16b3ca74023dddb178af035c94c9ab95d76ee19d"
+  },
+  "_resolved": "git://github.com/eric-ng/karma-html-reporter.git#e6781d0b3e39a016631cdd981684548cd5d0c5a0",
+  "_from": "git://github.com/eric-ng/karma-html-reporter.git"
 }
