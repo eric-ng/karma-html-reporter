@@ -23,18 +23,32 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
   }];
 
   var initliazeHtmlForBrowser = function(browser) {
-    var timestamp = (new Date()).toISOString().substr(0, 19);
+    var timestamp = (new Date()).toISOString().substr(0, 19).split('T').join(' ');
     var suite = '';
 
-    suite = '<div><h1>'+browser.name+'</h1><h1>'+pkgName+'</h1><h1>'+timestamp+'</h1><h1>'+os.hostname()+'</div>';
-    suite += '<p>'+browser.fullName+'</p>';
+    suite += '<div><div><h1>Test Suite '+pkgName+' Results</div>';
+    suite += '<div><b>Browser:  </b>'+browser.name+'</div>';
+    suite += '<div><b>Timestamp:  </b>'+timestamp+'</div>';
+    suite += '<div><b>Hostname:  </b>'+os.hostname()+'</div>';
+    suite += '<div><b>Browser Spec:  </b>'+browser.fullName+'</div></div>';
+    suite += '<hr>';
     
     suites[browser.id] = suite;
   };
 
   this.onRunStart = function(browsers) {
     suites = Object.create(null);
-    xml = '<html>';
+    xml = '<html><head>';
+    xml += '<style>';
+    xml += 'body{font-family:arial;color:#333;}';
+    xml += '.suc{background:#DFD;}';
+    xml += '.fail{background:#FDD;}';
+    xml += '.skip{background:#FFD;}';
+    xml += '.summary span, .testcase span {display:table-cell;}'
+    xml += '.summary{padding:15px;font-size:20px;background:#DDF;margin-top:20px;}';
+    xml += '.testcase{padding:15px;border-bottom:1px solid #AAA;}';
+    xml += '.testattr{width:180px;font-weight:bold;padding:5px 10px 5px 0px;display:inline-block;text-align:right;';
+    xml += '</style></head><body>';
     browsers.forEach(initliazeHtmlForBrowser);
   };
 
@@ -53,12 +67,13 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
     var result = browser.lastResult;
 
-    suite += '<div>tests:'+result.total+'</div>';
-    suite += '<div>errors:'+result.total+'</div>';
-    suite += '<div>failures:'+(result.disconnected || result.error ? 1 : 0)+'</div>';
-    suite += '<div>time:'+((result.netTime || 0) / 1000)+'</div>';
-    suite += '<div>system-out:'+allMessages.join()+'</div>';
-    suite += '<div>system-err</div>';
+    suite += '<div class="summary"><div><span class="testattr">Tests</span><span>'+result.total+'</span></div>';
+    suite += '<div><span class="testattr">Successes</span><span>'+result.success+'</span></div>';
+    suite += '<div><span class="testattr">Failures</span><span>'+result.failed+'</span></div>';
+    suite += '<div><span class="testattr">Skips</span><span>'+result.skipped+'</span></div>';
+    suite += '<div><span class="testattr">Errors</span><span>'+(result.disconnected || result.error ? 'YES' : 'NONE')+'</span></div>';
+    suite += '<div><span class="testattr">Time</span><span>'+((result.netTime || 0) / 1000)+'</span></div>';
+    suite += '<div><span class="testattr">System Output</span><span>'+allMessages.join()+'</span></div></div>';
 
     suites[browser.id] = suite;
   };
@@ -67,7 +82,7 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
     for(var k in suites){
       xml += suites[k];
     }
-    xml += '</html>';
+    xml += '</body></html>';
     var htmlOutput = xml;
 
     pendingFileWritings++;
@@ -92,24 +107,19 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
   this.specSuccess = this.specSkipped = this.specFailure = function(browser, result) {
     var spec = suites[browser.id];
 
-    spec += '<div>';
-    spec += '<p>name:'+result.description+'</p>';
-    spec += '<p>time:'+((result.time || 0)/1000)+'</p>';
-    spec += '<p>classname:'+(pkgName ? pkgName + ' ' : '') + browser.name + '.' + result.suite.join(' ').replace(/\./g, '_')+'</p>';
-    spec += '</div>';
-
-    if (result.skipped) {
-      spec += '<p>skipped</p>';
-    }
-
+    spec += '<div class="testcase '+(result.skipped?'skip':(result.success?'suc':'fail'))+'">';
+    spec += '<div><span class="testattr">Test Suite</span><span>'+pkgName +'</span></div>';
+    spec += '<div><span class="testattr">File</span><span>'+result.suite.join('.')+'</span></div>';
+    spec += '<div><span class="testattr">Description</span><span>'+result.description+'</span></div>';
+    spec += '<div><span class="testattr">Time</span><span>'+((result.time || 0)/1000)+'</span></div>';
     if (!result.success) {
       result.log.forEach(function(err) {
-        spec += '<p>failure';
-        spec += '<span>type:</span>';
-        spec += '<span>'+formatError(err)+'</span>';
-        spec += '</p>';
+        spec += '<div><span class="testattr">Failure</span>';
+        spec += '<span>'+formatError(err)+'</span></div>';
       });
     }
+    spec += '</div>';
+
     suites[browser.id] = spec;
   };
 
