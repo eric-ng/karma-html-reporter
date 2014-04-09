@@ -90,19 +90,21 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
   };
 
   this.specSuccess = this.specSkipped = this.specFailure = function(browser, result) {
-    var spec = suites[browser.id].DIV(
-      P('name:'+result.description), 
-      P('time:'+ ((result.time || 0) / 1000)),
-      P('classname:'+ (pkgName ? pkgName + ' ' : '') + browser.name + '.' + result.suite.join(' ').replace(/\./g, '_'))
-    );
+    var spec = suites[browser.id];
+    spec.push('DIV');
+    spec.push(['P','name:'+result.description]);
+    spec.push(['p','time:'+ ((result.time || 0) / 1000)]);
+    spec.push(['p','classname:'+ (pkgName ? pkgName + ' ' : '') + browser.name + '.' + result.suite.join(' ').replace(/\./g, '_')]);
 
     if (result.skipped) {
-      spec.P('skipped');
+      spec.push('P');spec.push('skipped');
     }
 
     if (!result.success) {
       result.log.forEach(function(err) {
-        spec.P('failure', SPAN('type:'+ ''), SPAN(formatError(err)));
+        spec.push('P');spec.push('failure');
+        spec.push(['SPAN','type:'+ '']);
+        spec.push(['SPAN',formatError(err)]);
       });
     }
   };
