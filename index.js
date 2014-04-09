@@ -1,7 +1,6 @@
 var os = require('os');
 var path = require('path');
 var fs = require('fs');
-var builder = require('DOMBuilder');
 
 
 var HtmlReporter = function(baseReporterDecorator, config, logger, helper, formatError) {
@@ -25,21 +24,17 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
   var initliazeHtmlForBrowser = function(browser) {
     var timestamp = (new Date()).toISOString().substr(0, 19);
-    var suite = suites[browser.id] = [];
-    suite.push('div');
-    suite.push(['h1',browser.name]);
-    suite.push(['h1',pkgName]);
-    suite.push(['h1',timestamp]);
-    suite.push(['h1',os.hostname()]);
-    suite.push('p');
-    suite.push(browser.fullName);
+    var suite = '';
+
+    suite = '<div><h1>'+browser.name+'</h1><h1>'+pkgName+'</h1><h1>'+timestamp+'</h1><h1>'+os.hostname()+'</div>';
+    suite += '<p>'+browser.fullName+'</p>';
     
-    xml.push(suite);
+    suites[browser.id] = suite;
   };
 
   this.onRunStart = function(browsers) {
     suites = Object.create(null);
-    xml = [];
+    xml = '<html>';
     browsers.forEach(initliazeHtmlForBrowser);
   };
 
@@ -58,21 +53,26 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
     var result = browser.lastResult;
 
-    suite.push('div');suite.push('tests:'+result.total);
-    suite.push('div');suite.push('errors:'+result.disconnected || result.error ? 1 : 0);
-    suite.push('DIV');suite.push('failures:'+result.failed);
-    suite.push('DIV');suite.push('time:'+(result.netTime || 0) / 1000);
+    suite += '<div>tests:'+result.total+'</div>';
+    suite += '<div>errors:'+result.total+'</div>';
+    suite += '<div>failures:'+(result.disconnected || result.error ? 1 : 0)+'</div>';
+    suite += '<div>time:'+((result.netTime || 0) / 1000)+'</div>';
+    suite += '<div>system-out:'+allMessages.join()+'</div>';
+    suite += '<div>system-err</div>';
 
-    suite.push('DIV');suite.push('system-out:'+allMessages.join());
-    suite.push('DIV');suite.push('system-err');
+    suites[browser.id] = suite;
   };
 
   this.onRunComplete = function() {
-    var htmlToOutput = xml;
+    for(var k in suites){
+      xml += suites[k];
+    }
+    xml += '</html>';
+    var htmlOutput = xml;
 
     pendingFileWritings++;
     helper.mkdirIfNotExists(path.dirname(outputFile), function() {
-      fs.writeFile(outputFile, builder.build(htmlToOutput, 'html').toString(), function(err) {
+      fs.writeFile(outputFile, htmlOutput, function(err) {
         if (err) {
           log.warn('Cannot write HTML\n\t' + err.message);
         } else {
@@ -91,22 +91,26 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
   this.specSuccess = this.specSkipped = this.specFailure = function(browser, result) {
     var spec = suites[browser.id];
-    spec.push('DIV');
-    spec.push(['P','name:'+result.description]);
-    spec.push(['p','time:'+ ((result.time || 0) / 1000)]);
-    spec.push(['p','classname:'+ (pkgName ? pkgName + ' ' : '') + browser.name + '.' + result.suite.join(' ').replace(/\./g, '_')]);
+
+    spec += '<div>';
+    spec += '<p>name:'+result.description+'</p>';
+    spec += '<p>time:'+((result.time || 0)/1000)+'</p>';
+    spec += '<p>classname:'+(pkgName ? pkgName + ' ' : '') + browser.name + '.' + result.suite.join(' ').replace(/\./g, '_')+'</p>';
+    spec += '</div>';
 
     if (result.skipped) {
-      spec.push('P');spec.push('skipped');
+      spec += '<p>skipped</p>';
     }
 
     if (!result.success) {
       result.log.forEach(function(err) {
-        spec.push('P');spec.push('failure');
-        spec.push(['SPAN','type:'+ '']);
-        spec.push(['SPAN',formatError(err)]);
+        spec += '<p>failure';
+        spec += '<span>type:</span>';
+        spec += '<span>'+formatError(err)+'</span>';
+        spec += '</p>';
       });
     }
+    suites[browser.id] = spec;
   };
 
   // wait for writing all the xml files, before exiting
