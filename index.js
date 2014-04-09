@@ -25,15 +25,21 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
   var initliazeHtmlForBrowser = function(browser) {
     var timestamp = (new Date()).toISOString().substr(0, 19);
-    var suite = suites[browser.id] = xml;
-    suite.DIV(H1(browser.name),H1(pkgName),H1(timestamp),H1(os.hostname()));
+    var suite = suites[browser.id] = [];
+    suite.push('div');
+    suite.push(['h1',browser.name]);
+    suite.push(['h1',pkgName]);
+    suite.push(['h1',timestamp]);
+    suite.push(['h1',os.hostname()]);
+    suite.push('p');
+    suite.push(browser.fullName);
     
-    suite.P(browser.fullName);
+    xml.push(suite);
   };
 
   this.onRunStart = function(browsers) {
     suites = Object.create(null);
-    xml = builder.html;
+    xml = [];
     browsers.forEach(initliazeHtmlForBrowser);
   };
 
@@ -52,13 +58,13 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
     var result = browser.lastResult;
 
-    suite.DIV('tests:'+result.total);
-    suite.DIV('errors:'+result.disconnected || result.error ? 1 : 0);
-    suite.DIV('failures:'+result.failed);
-    suite.DIV('time:'+(result.netTime || 0) / 1000);
+    suite.push('div');suite.push('tests:'+result.total);
+    suite.push('div');suite.push('errors:'+result.disconnected || result.error ? 1 : 0);
+    suite.push('DIV');suite.push('failures:'+result.failed);
+    suite.push('DIV');suite.push('time:'+(result.netTime || 0) / 1000);
 
-    suite.DIV('system-out:'+allMessages.join());
-    suite.DIV('system-err');
+    suite.push('DIV');suite.push('system-out:'+allMessages.join());
+    suite.push('DIV');suite.push('system-err');
   };
 
   this.onRunComplete = function() {
