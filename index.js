@@ -5,7 +5,7 @@ var builder = require('DOMBuilder');
 
 
 var HtmlReporter = function(baseReporterDecorator, config, logger, helper, formatError) {
-  var log = logger.create('reporter.junit');
+  var log = logger.create('reporter.html');
   var reporterConfig = config.junitReporter || {};
   var pkgName = reporterConfig.suite || '';
   var outputFile = helper.normalizeWinPath(path.resolve(config.basePath, reporterConfig.outputFile
