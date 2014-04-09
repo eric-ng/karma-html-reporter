@@ -17,7 +17,7 @@
   ],
   "author": "Eric Ng <airic.ng@gmail.com>",
   "dependencies": {
-    "DOMBuilder"
+    "DOMBuilder":"2.1.5"
   },
   "peerDependencies": {
     "karma": ">=0.10"
