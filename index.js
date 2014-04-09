@@ -72,7 +72,7 @@ var HtmlReporter = function(baseReporterDecorator, config, logger, helper, forma
 
     pendingFileWritings++;
     helper.mkdirIfNotExists(path.dirname(outputFile), function() {
-      fs.writeFile(outputFile, builder.build(htmlToOutput).toString(), function(err) {
+      fs.writeFile(outputFile, builder.build(htmlToOutput, 'html').toString(), function(err) {
         if (err) {
           log.warn('Cannot write HTML\n\t' + err.message);
         } else {
